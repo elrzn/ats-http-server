@@ -1,4 +1,8 @@
+(* #include "share/atspre_define.hats" *)
 #include "share/atspre_staload.hats"
+(* #include "libats/libc/DATS/sys/socket.dats" *)
+
+#define DEFAULT_PORT 8080
 
 // verb * resource * protocol
 typedef raw_http_request = (string, string, string);
@@ -22,4 +26,6 @@ fun refine_http_request(raw_request: raw_http_request): http_request =
     | nyi      => $raise NotImplemented(nyi)
   end
 
-implement main0() = ()
+implement main0(argc, argv) = {
+  val port = (if argc >= 2 then g0string2int(argv[1]) else DEFAULT_PORT): int;
+}
