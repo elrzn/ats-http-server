@@ -3,6 +3,7 @@
 (* #include "libats/libc/DATS/sys/socket.dats" *)
 
 #define DEFAULT_PORT 8080
+#define VERBOSE true
 
 // verb * resource * protocol
 typedef raw_http_request = (string, string, string);
@@ -28,4 +29,5 @@ fun refine_http_request(raw_request: raw_http_request): http_request =
 
 implement main0(argc, argv) = {
   val port = (if argc >= 2 then g0string2int(argv[1]) else DEFAULT_PORT): int;
+  val () = if VERBOSE then println!("port = ", port) else ();
 }
