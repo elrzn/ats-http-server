@@ -1,6 +1,7 @@
-(* #include "share/atspre_define.hats" *)
 #include "share/atspre_staload.hats"
-(* #include "libats/libc/DATS/sys/socket.dats" *)
+staload "libats/libc/SATS/netinet/in.sats"
+staload "libats/libc/SATS/sys/socket.sats"
+staload "libats/libc/SATS/sys/socket_in.sats"
 
 #define DEFAULT_PORT 8080
 #define VERBOSE true
@@ -28,6 +29,15 @@ fun refine_http_request(raw_request: raw_http_request): http_request =
   end
 
 implement main0(argc, argv) = {
-  val port = (if argc >= 2 then g0string2int(argv[1]) else DEFAULT_PORT): int;
-  val () = if VERBOSE then println!("port = ", port) else ();
+
+  (* Fetch the port from command line arguments. *)
+  val port = (if argc >= 2 then g0string2int(argv[1]) else DEFAULT_PORT): int
+  val () = if VERBOSE then println!("port = ", port) else ()
+
+  (* Define sockaddr_in structure *)
+  var servaddr: sockaddr_in_struct
+  val listening_port = in_port_nbo(port) // sin_port
+  val address = in_addr_hbo2nbo(INADDR_ANY)
+  val sin_family = AF_INET
+  val () = sockaddr_in_init(servaddr, sin_family, address, listening_port)
 }
