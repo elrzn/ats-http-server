@@ -28,7 +28,7 @@ fun refine_http_request(raw_request: raw_http_request): http_request =
     | nyi      => $raise NotImplemented(nyi)
   end
 
-(* Create and bind the socket to the given listener port. *)
+(* Create and prepare a socket to listen on the given port. *)
 fun socket_on_port(port: int): sockaddr_in_struct =
   socket where {
     var socket: sockaddr_in_struct
@@ -37,6 +37,19 @@ fun socket_on_port(port: int): sockaddr_in_struct =
     and sin_family     = AF_INET
     val () = sockaddr_in_init(socket, sin_family, address, listening_port)
   }
+
+fun bind_and_listen(port: int): [fd: int] (socket_v(fd, listen) | int fd) =
+  let
+    // hack because I need to read more on left-values and dataviews
+    var socket: sockaddr_in_struct
+    val () = socket := socket_on_port(port)
+
+    val (pf_sock_s | sockfd) = socket_AF_type_exn(AF_INET, SOCK_STREAM)
+    val () = bind_in_exn(pf_sock_s | sockfd, socket)
+    val () = listen_exn(pf_sock_s | sockfd, 10)
+  in
+    (pf_sock_s | sockfd)
+  end
 
 implement main0(argc, argv) = {
 
