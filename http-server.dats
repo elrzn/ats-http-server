@@ -28,6 +28,16 @@ fun refine_http_request(raw_request: raw_http_request): http_request =
     | nyi      => $raise NotImplemented(nyi)
   end
 
+(* Create and bind the socket to the given listener port. *)
+fun socket_on_port(port: int): sockaddr_in_struct =
+  socket where {
+    var socket: sockaddr_in_struct
+    val listening_port = in_port_nbo(port) // sin_port
+    and address        = in_addr_hbo2nbo(INADDR_ANY)
+    and sin_family     = AF_INET
+    val () = sockaddr_in_init(socket, sin_family, address, listening_port)
+  }
+
 implement main0(argc, argv) = {
 
   (* Fetch the port from command line arguments. *)
@@ -35,9 +45,5 @@ implement main0(argc, argv) = {
   val () = if VERBOSE then println!("port = ", port) else ()
 
   (* Define sockaddr_in structure *)
-  var servaddr: sockaddr_in_struct
-  val listening_port = in_port_nbo(port) // sin_port
-  val address = in_addr_hbo2nbo(INADDR_ANY)
-  val sin_family = AF_INET
-  val () = sockaddr_in_init(servaddr, sin_family, address, listening_port)
+  val socket = socket_on_port(port)
 }
